@@ -4,7 +4,7 @@
 * Verify the application is running
 * Generate some artificial traffic
 * See APM traces in the UI
-* Run a troubleshooting exercise with uAPM
+
 
 !!! note "Ensure you have a running instance"
     The setup part is already documented in the [Preparation](../../smartagent/prep/) and [Deploy the Smart Agent in K3s](../../smartagent/k3s/) steps. If you are using an AWS/EC2 instance, make sure it is available and skip to [Step 1](../../apm/hotrod/#1-deploy-the-hot-rod-application-into-k3s), otherwise ensure your Multipass instance is available and running before continuing.
@@ -157,9 +157,12 @@ instance (multipass or EC2) and run the following command.
     ```
 ---
  
- Now go to **Dashboards → µAPM → Service**.  Please select your environment you found in the previous task then select the front end service and set time to -15m
+ Now go to **Dashboards → µAPM → Service**.  Please select your environment you found in the previous task then select the frontend service and set time to -15m ()
+ 
+![µAPM Dashboard](../images/apm/hotrod-FE-Service-dashboard.png){: .zoom}
 
-![µAPM Dashboard](../images/apm/tmp.png){: .zoom}
+!!! note  "No Data in charts"
+    if no data is visible, check that you have the right service **frontend**, and not front-end.
 
 To load the dashboard with more data run the following command a few times to create load on the service:
 
@@ -169,18 +172,37 @@ To load the dashboard with more data run the following command a few times to cr
     siege -r2 -c20 "http://$HOTROD_ENDPOINT/dispatch?customer=392&nonse=0.17041229755366172"
     ```
 
-With this automatically generated dashboard you can keep an eye out for the health of you service, it provides various performance related charts as well as relevant information on the underlying host and kubernetes platform if applicable.
+With this automatically generated dashboard you can keep an eye out for the health of your service, it provides various performance related charts as well as relevant information on the underlying host and kubernetes platform if applicable.
  
 Take some time to explore the various charts in this dashboard
+
 
 ---
 
 ## 5. Verify that µAPM traces are reaching SignalFx
 
-Open SignalFx in your browser and select the **µAPM** tab.
+Open SignalFx in your browser and select the **µAPM** tab. 
 
 ![select APM](../images/apm/select-apm.png){: .zoom}
 
-Select the **Troubleshooting** tab, and select your environment and set the time to 15 minutes. This will show you the Dependency Map for the Hot R.O.D. application.
+Select the **Troubleshooting** tab, and select your environment you found before and set the time to 15 minutes. This will show you the automatically generated Dependency Map for the Hot R.O.D. application.
+It should look similar to the screenshot below:
 
-![Hot R.O.D. in APM](../images/apm/hotrod-troubleshooting.png)
+![Hot R.O.D. in APM](../images/apm/hotrod-find-env.png){: .zoom}
+
+If the screen looks very different you may by accident have selected the Previous Generation of APM (**µAPM PG**) from the menu bar.
+To rectify this, go back and select the **µAPM** tab. 
+
+The at legend the bottom of the page explains the meaning of the graphics
+![APM Legenda](../images/apm/apm-legend.png){: : .shadow .zoom}
+
+ * The size of a circle indicates the number of request that have gone though a service (relative to others)
+ * The higher the average latency number of a request on average will create thicker lines
+ * THh size of the Red dots indicate the number of errors  on that service (relative to others)
+ * Light red dots indicate that the errors for that service are inherited from an underlying service. 
+ * Deep red dots mean the service is the originator of the errorE
+
+
+Also in this view you can see the overall Error and Latency rates over time charts. 
+
+Take some time to explore the charts in this view.
