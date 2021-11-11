@@ -12,10 +12,10 @@ resource "random_string" "no_rum_prefix" {
 }
 
 resource "aws_instance" "no_rum" {
-  ami                    = var.ami
+  ami                    = data.aws_ami.latest-ubuntu.id
   instance_type          = var.rum_master_type
   key_name               = var.key_name
-  vpc_security_group_ids = var.security_group_id
+  vpc_security_group_ids = [aws_security_group.rum.id]
 
   root_block_device {
     volume_size = var.instance_disk_aws
