@@ -1,4 +1,9 @@
-# Working with Detectors - Lab Summary
+---
+title: Working with Detectors - Lab Summary
+linkTitle: Creating a Detector
+type: docs
+weight: 1
+---
 
 * Create a Detector from one of your charts
 * Setting Alert conditions

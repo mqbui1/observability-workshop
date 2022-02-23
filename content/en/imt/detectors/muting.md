@@ -1,5 +1,10 @@
-# Working with Muting Rules - Lab Summary
-
+---
+title: Working with Muting Rules - Lab Summary
+linkTitle: Creating a Muting Rule
+type: docs
+weight: 3
+---
+# 
 * Learn how to configure Muting Rules
 * Learn how to resume notifications
   
