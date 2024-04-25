@@ -1,11 +1,13 @@
 #!/bin/bash
 echo "Building: $1";
-export ACCESS_TOKEN="<redacted"
+
+# Change these values below to match your environment and safe this file as start.sh
+export ACCESS_TOKEN="***REDACTED***"
 export REALM="eu0"
-export RUM_TOKEN="<redacted>"
-export HEC_TOKEN="<redacted>"
-#export HEC_URL="https://http-inputs-o11y-workshop-eu0.splunkcloud.com:443/services/collector/event"
-export HEC_URL="https://http-inputs-o11y-workshop-us1.splunkcloud.com:443/services/collector/event"
+export RUM_TOKEN="***REDACTED***"
+export HEC_TOKEN="***REMOVED***"
+export HEC_URL="https://http-inputs-o11y-workshop-eu0.splunkcloud.com:443/services/collector/event"
+#export HEC_URL="https://http-inputs-o11y-workshop-us1.splunkcloud.com:443/services/collector/event"
 export INSTANCE=$1
 
 orb create -c cloud-init.yaml -a arm64 ubuntu:jammy $INSTANCE
