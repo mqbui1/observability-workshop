@@ -77,7 +77,7 @@ Initializing provider plugins...
 
 ### Optional advanced variables
 
-- `wsversion`: Set this to `main` if working on development of the workshop, otherwise this can be omitted.
+- `wsversion`: Set this to `main` if working on the development of the workshop, otherwise this can be omitted.
 
 ## 6. Create Terraform variables file
 
