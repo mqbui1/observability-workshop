@@ -18,7 +18,6 @@ processors:
       - action: upsert
         value: "gateway"
         key: otelcol.service.mode
-
 exporters:
   debug:
     verbosity: detailed
