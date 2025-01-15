@@ -5,6 +5,8 @@ time: 10 minutes
 weight: 10
 ---
 
+### Setup
+
 Pick a location where you are going to run the workshop on your machine, (we will use [WORKSHOP] for this location), create a sub directory called **1-agent** and  move into it.
 
 In *[WORKSHOP]/1-agent* create  a file called **agent.yaml**  and copy the following starting config in it.
@@ -30,15 +32,35 @@ Let's start with our first exercise:
 
 {{% notice title="Exercise" style="green" icon="running" %}}
 
-* Add an **otlp:** receiver, under the *protocols:* section, add a *HTTP:* entry, with an endpoint of *"0.0.0.0:4318"* and add it as a receiver to all the 8*receiver:* sections of the pipelines  
-* Enable the **memory_limiter:** processor by adding it in the *processor:* section of all the pipelines
-* Add a **debug:* exporter with *verbosity:* entry set to *detailed* and also add it as an exporter in all *exporter:* sections of the pipelines
+* Add the following as a receiver:
+
+```text
+  otlp: receiver
+    protocols: section
+      HTTP: entry, with an endpoint of "0.0.0.0:4318"
+```
+
+* Add the receiver to all the *receiver:* sections in the pipelines
+* Enable the **memory_limiter:** processor by adding it in all the *processor:* sections of the pipelines
+
+```text
+  - memory_limiter or [memory_limiter] array
+```
+
+* Add the following exporter:
+
+```text
+  debug: exporter
+    verbosity: entry, set to detailed
+```
+
+Add it as an exporter in all *exporter:* sections of the pipelines
 
 {{% /notice %}}
 
 {{% notice title="Tip" style="primary"  icon="lightbulb" %}}
- Note that in the exercise  above all key elements are highlighted, you just need to add them yourself.
- Pay attention to the format as the configuration of the agent is using yaml based.
+ Note that in the exercise above we give you all key elements in yaml format, you just need to correct them yourself.
+ Pay attention to the format as the configuration of the agent is yaml based.
 
 {{% /notice %}}
 
@@ -48,10 +70,13 @@ If done correctly your configuration should look like this:
 ![otelbin1](../images/agent-1-1.png)
 
 ---
+
+### Test & Validate
+
 Run the following command to  test your config (make sure you use the right otel collector you downloaded):
 
 ```text
-[LOCATION_OF_OTELCOLLECTOR]/otelcol_darwin_arm64 --config=agent.yaml
+[LOCATION_OF_OTELCOLLECTOR]/otelcol --config=agent.yaml
 ```
 
 If you have done everything correctly, the last line of the output should be :
