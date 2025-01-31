@@ -9,8 +9,8 @@ In this section, you'll learn how to configure the OpenTelemetry Collector to **
 
 We'll walk through how to configure several processors in the OpenTelemetry Collector, including:
 
-- **Attributes** Processor.
-- **Redaction** Procesor
+- **Attributes** Processor
+- **Redaction** Processor
 
 ### Setup
 
@@ -155,7 +155,6 @@ Copy the following JSON and save to the file named `trace.json` in the `6-remove
 {{% /tabs %}}
 {{% /notice %}}
 
-
 ### Step 2: Configure Agent
 
 In this exercise, we will update the `agent.yaml` file by adding `attributes` and `redaction` processors.
@@ -179,22 +178,18 @@ attributes/removetags:
 
 The attributes/update processor is used to update or redact sensitive data. We perform the following actions:
 
-Redacting credit card numbers: Replace the amex card number with the word "redacted".
-Redacting credit card numbers: Replace the amex card number with the word "redacted".
-Deleting the account_password field to remove passwords from traces.
-Hashing the account_email to anonymize email addresses.
+- Redacting credit card numbers: Replace the `user.amex` card number with the word `"redacted"`.
+- Deleting the `user.account_password` field to remove passwords from traces.
+- Hashing the `user.account_email` to anonymize email addresses.
 
 ```yaml
 attributes/update:
   actions:
     - key: user.amex
-    - key: user.amex
       value: redacted
       action: update
     - key: user.account_password
-    - key: user.account_password
       action: delete
-    - key: user.account_email
     - key: user.account_email
       action: hash
 ```
