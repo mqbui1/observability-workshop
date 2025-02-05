@@ -6,7 +6,7 @@ weight: 2
 
 ### Test Gateway
 
-Open a 3rd terminal window, this one will be used to run the `gateway` and navigate to the`[WORKSHOP]/2-gateway` directory and run the following command to test the gateway configuration:
+Open a third terminal window, this one will be used to run the `gateway` and navigate to the`[WORKSHOP]/2-gateway` directory and run the following command to test the gateway configuration:
 
 ```text
 ../otelcol --config=gateway.yaml
