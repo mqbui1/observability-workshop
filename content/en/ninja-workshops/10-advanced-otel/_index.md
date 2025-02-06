@@ -13,7 +13,7 @@ The goal of this workshop is to help you become comfortable creating and modifyi
 
 The workshop also explores how to configure the OpenTelemetry Collector to store telemetry data locally instead of transmitting it to a third-party vendor backend. Furthermore, this approach significantly enhances the debugging and troubleshooting process and is useful for testing and development environments where you don’t want to send data to a production system.
 
-To get the most out of this workshop, you should have a basic understanding of the OpenTelemetry Collector and its configuration file format. Additionally, proficiency in editing YAML files is required. The entire workshop is designed to run locally. You will benefit from having a good editor for the YAML we use in this Workshop, like Visual Studio Code. You can download it [**here**](https://code.visualstudio.com/download) if you need it.
+To get the most out of this workshop, you should have a basic understanding of the OpenTelemetry Collector and its configuration file format. Additionally, proficiency in editing YAML files is required. The entire workshop is designed to run locally.
 
 ### Workshop Overview
 
@@ -35,7 +35,7 @@ By the end of this workshop, you'll be familiar with configuring the OpenTelemet
 
 ### Prerequisites
 
-- **Create a directory** on your machine for the workshop (e.g., `collector`). We will refer to this directory as `[WORKSHOP]` in the instructions.
+- **Create a directory** on your machine for the workshop (e.g., `advanced-otel`). We will refer to this directory as `[WORKSHOP]` in the instructions.
 - **Download the latest OpenTelemetry Collector release** for your platform and place it in the `[WORKSHOP]` directory:
 
 | Platform                         | Binary URL          |
@@ -73,3 +73,10 @@ Mac users must trust the executable when running `otelcol` for the first time. F
 {{% /tab %}}
 
 {{% /tabs %}}
+
+{{% notice title=" Optional Tools" style="primary" icon="lightbulb" %}}
+For this workshop, using a good YAML editor like **Visual Studio Code** will be beneficial. If you don’t have it installed, you can download it [**here**](https://code.visualstudio.com/download).
+
+Additionally, having access to **jq** is recommended. This lightweight command-line tool helps process and format JSON data, making it easier to inspect traces, metrics, and logs from the OpenTelemetry Collector. If you do not have it, download it [**here**](https://jqlang.org/download/).
+
+{{% /notice %}}
