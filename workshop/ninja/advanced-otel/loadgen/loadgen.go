@@ -2,12 +2,12 @@ package main
 
 import (
 	"bytes"
-	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -80,7 +80,7 @@ func sendTrace(traceID, spanID string, startTime, endTime int64) {
 								"name":              "/Login Validator",
 								"startTimeUnixNano": fmt.Sprintf("%d", startTime),
 								"endTimeUnixNano":   fmt.Sprintf("%d", endTime),
-								"kind":             2,
+								"kind":              2,
 								"attributes": []interface{}{
 									map[string]interface{}{
 										"key": "user.name",
@@ -179,7 +179,7 @@ func sendHealthTrace(traceID, spanID string, startTime, endTime int64) {
 								"name":              "/_healthz",
 								"startTimeUnixNano": fmt.Sprintf("%d", startTime),
 								"endTimeUnixNano":   fmt.Sprintf("%d", endTime),
-								"kind":             2,
+								"kind":              2,
 								"attributes": []interface{}{
 									map[string]interface{}{
 										"key": "health.status",
@@ -220,16 +220,82 @@ func sendJSON(url string, data interface{}) {
 	fmt.Println("Response:", string(body))
 }
 
+// Function to generate a random quote
+func getRandomQuote() string {
+	lotrQuotes := []string{
+		"One does not simply walk into Mordor.",
+		"Even the smallest person can change the course of the future.",
+		"All we have to decide is what to do with the time that is given us.",
+		"There is some good in this world, and it's worth fighting for.",
+	}
+
+	starWarsQuotes := []string{
+		"Do or do not, there is no try.",
+		"The Force will be with you. Always.",
+		"I find your lack of faith disturbing.",
+		"In my experience, there is no such thing as luck.",
+	}
+
+	if rand.Intn(2) == 0 {
+		return lotrQuotes[rand.Intn(len(lotrQuotes))]
+	}
+	return starWarsQuotes[rand.Intn(len(starWarsQuotes))]
+}
+
+// Function to generate a random log level
+func getRandomLogLevel() string {
+	logLevels := []string{"INFO", "WARN", "ERROR", "DEBUG"}
+	return logLevels[rand.Intn(len(logLevels))]
+}
+
+// Function to generate a log entry
+func generateLogEntry(jsonOutput bool) string {
+	timestamp := time.Now().Format("2006-01-02 15:04:05")
+	level := getRandomLogLevel()
+	message := getRandomQuote()
+
+	if jsonOutput {
+		logEntry := map[string]string{
+			"timestamp": timestamp,
+			"level":     level,
+			"message":   message,
+		}
+		jsonData, _ := json.Marshal(logEntry)
+		return string(jsonData)
+	}
+	return fmt.Sprintf("%s [%s] - %s", timestamp, level, message)
+}
+
+// Function to write logs to a file
+func writeLogs(jsonOutput bool) {
+	logFile := "quotes.log"
+	fmt.Printf("Writing logs to %s. Press Ctrl+C to stop.\n", logFile)
+
+	for {
+		logEntry := generateLogEntry(jsonOutput)
+		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		file.WriteString(logEntry + "\n")
+		file.Close()
+		time.Sleep(1 * time.Second)
+	}
+}
+
 // Display usage instructions
 func printHelp() {
 	fmt.Println(`Usage: trace_sender [OPTIONS]
 Options:
   -h, --help    Display this help message
   -health       Send health traces in addition to base traces
+  -logs         Enable logging of random quotes to quotes.log
+  -json         Output logs in JSON format (only applicable with -logs)
 
 Example:
-  trace_sender -health    Send both base and health traces every 20 seconds
-  trace_sender            Send only base traces every 20 seconds`)
+  trace_sender -health       Send both base and health traces every 20 seconds
+  trace_sender -logs         Write random quotes to quotes.log
+  trace_sender -logs -json   Write random quotes in JSON format to quotes.log`)
 }
 
 func main() {
@@ -237,6 +303,8 @@ func main() {
 	helpFlag := flag.Bool("h", false, "Display help message")
 	helpFlagLong := flag.Bool("help", false, "Display help message")
 	healthFlag := flag.Bool("health", false, "Send health traces in addition to base traces")
+	logsFlag := flag.Bool("logs", false, "Enable logging of random quotes to quotes.log")
+	jsonFlag := flag.Bool("json", false, "Output logs in JSON format (only applicable with -logs)")
 
 	flag.Parse()
 
@@ -244,6 +312,12 @@ func main() {
 	if *helpFlag || *helpFlagLong {
 		printHelp()
 		os.Exit(0)
+	}
+
+	// Start logging if -logs flag is provided
+	if *logsFlag {
+		writeLogs(*jsonFlag)
+		return
 	}
 
 	fmt.Println("Sending traces every 20 seconds. Use Ctrl-C to stop.")
