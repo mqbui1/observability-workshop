@@ -10,9 +10,13 @@ SplunkRum.init({
 });
 
 SplunkSessionRecorder.init({
-    app: "observability-workshop",
+    appplicationName: "observability-workshop",
     realm: "us1",
-    rumAccessToken: "***REDACTED***"
+    rumAccessToken: "***REDACTED***",
+    recorder: "splunk",
+    features: {
+        video: true,
+    }
 });
 </script>
 </script>
