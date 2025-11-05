@@ -74,20 +74,24 @@ find . -type f -iname "*.png" -exec optipng -nb -nc {} \;
 
 ## Test release build locally
 
-Build a release with
+Build a local version with:
 
 ``` bash
-./.github/ci/build_site
+hugo server --buildDrafts --buildFuture
 ```
 
-The output will be in `./site/vdev`.
+This will start a local development server at [http://localhost:1313](http://localhost:1313).
 
-To run a webserver that mimics GitHub Pages, install [devd][devd], e.g. with `brew install devd`.
-
-Then run
+To test a production build locally:
 
 ``` bash
-devd /observability-workshop/vdev/=./site/vdev /=./site/vdev
+hugo --minify --destination "public" --baseURL "http://localhost:8000/observability-workshop"
+```
+
+Then serve it with [devd][devd] (install with `brew install devd`):
+
+``` bash
+devd /observability-workshop/=./public /=./public
 ```
 
 and visit [http://localhost:8000/](http://localhost:8000/) to inspect the site.
@@ -98,10 +102,16 @@ and visit [http://localhost:8000/](http://localhost:8000/) to inspect the site.
 
 1. On GitHub, navigate to the main page of the repository.
 
-2. Under your repository name, click Actions.
+2. Under your repository name, click **Actions**.
 
-3. In the left sidebar, click Deploy Workshop.
+3. In the left sidebar, click **Deploy Workshop to GitHub Pages**.
 
-4. Above the list of workflow runs, select Run workflow dropdown and click Run workflow
+4. Above the list of workflow runs, select **Run workflow** dropdown.
 
-Then the release will run through the CI/CD pipeline and be available shortly after.
+5. Choose the release type:
+   - **minor** - for incremental updates (e.g., 6.13 → 6.14)
+   - **major** - for breaking changes (e.g., 6.14 → 7.0)
+
+6. Click **Run workflow**.
+
+The release will run through the CI/CD pipeline and be deployed to `https://splunk.github.io/observability-workshop/` shortly after.
