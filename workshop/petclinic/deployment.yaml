@@ -20,7 +20,6 @@ spec:
       containers:
         - name: config-server
           image: quay.io/phagen/spring-petclinic-config-server:0.0.2
-          #image: localhost:9999/spring-petclinic-config-server:local
           imagePullPolicy: Always
           ports:
             - containerPort: 8888
@@ -38,10 +37,9 @@ spec:
               memory: 768Mi
       volumes:
         - name: petclinic-repo
-          # mount /home/splunk/workshop/petclinic/petclinic-repo, but only if that directory already exists
           hostPath:
-            path: /home/splunk/workshop/petclinic/petclinic-repo # directory location on host
-            type: Directory # this field is optional
+            path: /home/splunk/workshop/petclinic/petclinic-repo
+            type: Directory
 ---
 apiVersion: v1
 kind: Service
@@ -85,7 +83,6 @@ spec:
             - java
             - org.springframework.boot.loader.JarLauncher
           image: quay.io/phagen/spring-petclinic-discovery-server:0.0.2
-          #image: localhost:9999/spring-petclinic-discovery-server:local
           name: discovery-server
           imagePullPolicy: Always
           ports:
@@ -95,10 +92,8 @@ spec:
               value: "-Xdebug -Dsplunk.profiler.call.stack.interval=150"
           resources:
             requests:
-              #cpu: 125m
               memory: 512Mi
             limits:
-              #cpu: 600m
               memory: 768Mi
 ---
 apiVersion: v1
@@ -131,7 +126,6 @@ spec:
       labels:
         app: api-gateway
       annotations:
-        #        instrumentation.opentelemetry.io/inject-java: "true"
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       containers:
@@ -144,7 +138,6 @@ spec:
             - org.springframework.boot.loader.JarLauncher
           name: api-gateway
           image: quay.io/phagen/spring-petclinic-api-gateway:0.0.7
-          #image: localhost:9999/spring-petclinic-api-gateway:local
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -213,228 +206,16 @@ spec:
       port: 81
       targetPort: 8080
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: customers-service
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  selector:
-    matchLabels:
-      app: customers-service
-  template:
-    metadata:
-      labels:
-        app: customers-service
-    spec:
-      terminationGracePeriodSeconds: 5
-      containers:
-        - command:
-            - ./dockerize
-            - -wait=tcp://discovery-server:8761
-            - -timeout=60s
-            - --
-            - java
-            - org.springframework.boot.loader.JarLauncher
-          image: quay.io/phagen/spring-petclinic-customers-service:0.0.2
-          #image: localhost:9999/spring-petclinic-customers-service:local
-          name: customers-service
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8081
-          env:
-            - name: _JAVA_OPTIONS
-              value: "-Dspring.profiles.active=docker,mysql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
-          resources:
-            requests:
-              memory: 512Mi
-            limits:
-              memory: 768Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: customers-service
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  type: ClusterIP
-  selector:
-    app: customers-service
-  ports:
-    - name: tcp
-      port: 8081
-      targetPort: 8081
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: vets-service
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  selector:
-    matchLabels:
-      app: vets-service
-  template:
-    metadata:
-      labels:
-        app: vets-service
-    spec:
-      terminationGracePeriodSeconds: 5
-      containers:
-        - command:
-            - ./dockerize
-            - -wait=tcp://discovery-server:8761
-            - -timeout=60s
-            - --
-            - java
-            - org.springframework.boot.loader.JarLauncher
-          image: quay.io/phagen/spring-petclinic-vets-service:0.0.2
-          #image: localhost:9999/spring-petclinic-vets-service:local
-          name: vets-service
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8083
-          env:
-            - name: _JAVA_OPTIONS
-              value: "-Dspring.profiles.active=docker,mysql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
-          resources:
-            requests:
-              memory: 512Mi
-            limits:
-              memory: 768Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: vets-service
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  type: ClusterIP
-  selector:
-    app: vets-service
-  ports:
-    - name: tcp
-      port: 8083
-      targetPort: 8083
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: visits-service
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  selector:
-    matchLabels:
-      app: visits-service
-  template:
-    metadata:
-      labels:
-        app: visits-service
-    spec:
-      terminationGracePeriodSeconds: 5
-      containers:
-        - command:
-            - ./dockerize
-            - -wait=tcp://discovery-server:8761
-            - -timeout=60s
-            - --
-            - java
-            - org.springframework.boot.loader.JarLauncher
-          image: quay.io/phagen/spring-petclinic-visits-service:0.0.2
-          #image: localhost:9999/spring-petclinic-visits-service:local
-          name: visits-service
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8082
-          env:
-            - name: _JAVA_OPTIONS
-              value: "-Dspring.profiles.active=docker,mysql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
-          resources:
-            requests:
-              memory: 512Mi
-            limits:
-              memory: 768Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: visits-service
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  type: ClusterIP
-  selector:
-    app: visits-service
-  ports:
-    - name: tcp
-      port: 8082
-      targetPort: 8082
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: admin-server
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  selector:
-    matchLabels:
-      app: admin-server
-  template:
-    metadata:
-      labels:
-        app: admin-server
-      annotations:
-        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
-    spec:
-      terminationGracePeriodSeconds: 5
-      containers:
-        - command:
-            - ./dockerize
-            - -wait=tcp://discovery-server:8761
-            - -timeout=60s
-            - --
-            - java
-            - org.springframework.boot.loader.JarLauncher
-          image: quay.io/phagen/spring-petclinic-admin-server:0.0.2
-          #image: localhost:9999/spring-petclinic-admin-server:local
-          name: admin-server
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 9090
-          resources:
-            requests:
-              memory: 512Mi
-            limits:
-              memory: 768Mi
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: admin-server
-  labels:
-    app.kubernetes.io/part-of: spring-petclinic
-spec:
-  type: ClusterIP
-  selector:
-    app: admin-server
-  ports:
-    - name: tcp
-      port: 9090
-      targetPort: 9090
----
+# ------------------------
+# SQL Server Database
+# ------------------------
 apiVersion: v1
 kind: Service
 metadata:
   name: petclinic-db
 spec:
   ports:
-    - port: 3306
+    - port: 1433
   selector:
     app: petclinic-db
 ---
@@ -454,20 +235,21 @@ spec:
         app: petclinic-db
     spec:
       containers:
-        - image: biarms/mysql:5.7
+        - image: mcr.microsoft.com/mssql/server:2019-latest
           name: petclinic-db
           env:
-            # Use secret in real usage
-            - name: MYSQL_ROOT_PASSWORD
-              value: petclinic
-            - name: MYSQL_DATABASE
-              value: "petclinic"
+            - name: SA_PASSWORD
+              value: "YourStrong!Passw0rd"
+            - name: ACCEPT_EULA
+              value: "Y"
+            - name: MSSQL_PID
+              value: "Express"
           ports:
-            - containerPort: 3306
+            - containerPort: 1433
               name: petclinic-db
           volumeMounts:
             - name: petclinic-db-persistent-storage
-              mountPath: /var/lib/mysql
+              mountPath: /var/opt/mssql
             - name: petclinic-db-initdb
               mountPath: /docker-entrypoint-initdb.d
       volumes:
@@ -482,365 +264,122 @@ metadata:
   name: petclinic-db-initdb-config
 data:
   initdb.sql: |
-    CREATE DATABASE IF NOT EXISTS petclinic;
-    GRANT ALL PRIVILEGES ON petclinic.* TO pcroot@localhost IDENTIFIED BY 'pc';
+    -- SQL Server T-SQL init script
+    IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = N'petclinic')
+    BEGIN
+        CREATE DATABASE petclinic;
+    END
+    GO
 
     USE petclinic;
+    GO
 
-    CREATE TABLE IF NOT EXISTS types (
-      id INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(80),
-      INDEX(name)
-    ) engine=InnoDB;
+    CREATE TABLE types (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        name NVARCHAR(80)
+    );
+    GO
 
-    CREATE TABLE IF NOT EXISTS owners (
-      id INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      first_name VARCHAR(30),
-      last_name VARCHAR(30),
-      address VARCHAR(255),
-      city VARCHAR(80),
-      telephone VARCHAR(20),
-      INDEX(last_name)
-    ) engine=InnoDB;
+    CREATE TABLE owners (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        first_name NVARCHAR(30),
+        last_name NVARCHAR(30),
+        address NVARCHAR(255),
+        city NVARCHAR(80),
+        telephone NVARCHAR(20)
+    );
+    GO
 
-    CREATE TABLE IF NOT EXISTS pets (
-      id INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(30),
-      birth_date DATE,
-      type_id INT(4) UNSIGNED NOT NULL,
-      owner_id INT(4) UNSIGNED NOT NULL,
-      INDEX(name),
-      FOREIGN KEY (owner_id) REFERENCES owners(id),
-      FOREIGN KEY (type_id) REFERENCES types(id)
-    ) engine=InnoDB;
+    CREATE TABLE pets (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        name NVARCHAR(30),
+        birth_date DATE,
+        type_id INT NOT NULL,
+        owner_id INT NOT NULL,
+        CONSTRAINT FK_pets_owner FOREIGN KEY(owner_id) REFERENCES owners(id),
+        CONSTRAINT FK_pets_type FOREIGN KEY(type_id) REFERENCES types(id)
+    );
+    GO
 
-    CREATE TABLE IF NOT EXISTS vets (
-      id INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      first_name VARCHAR(30),
-      last_name VARCHAR(30),
-      INDEX(last_name)
-    ) engine=InnoDB;
+    CREATE TABLE vets (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        first_name NVARCHAR(30),
+        last_name NVARCHAR(30)
+    );
+    GO
 
-    CREATE TABLE IF NOT EXISTS specialties (
-      id INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      name VARCHAR(80),
-      INDEX(name)
-    ) engine=InnoDB;
+    CREATE TABLE specialties (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        name NVARCHAR(80)
+    );
+    GO
 
-    CREATE TABLE IF NOT EXISTS vet_specialties (
-      vet_id INT(4) UNSIGNED NOT NULL,
-      specialty_id INT(4) UNSIGNED NOT NULL,
-      FOREIGN KEY (vet_id) REFERENCES vets(id),
-      FOREIGN KEY (specialty_id) REFERENCES specialties(id),
-      UNIQUE (vet_id,specialty_id)
-    ) engine=InnoDB;
+    CREATE TABLE vet_specialties (
+        vet_id INT NOT NULL,
+        specialty_id INT NOT NULL,
+        CONSTRAINT PK_vet_specialties PRIMARY KEY (vet_id, specialty_id),
+        CONSTRAINT FK_vet_specialties_vet FOREIGN KEY(vet_id) REFERENCES vets(id),
+        CONSTRAINT FK_vet_specialties_specialty FOREIGN KEY(specialty_id) REFERENCES specialties(id)
+    );
+    GO
 
-    CREATE TABLE IF NOT EXISTS visits (
-      id INT(4) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
-      pet_id INT(4) UNSIGNED NOT NULL,
-      visit_date DATE,
-      description VARCHAR(8192),
-      FOREIGN KEY (pet_id) REFERENCES pets(id)
-    ) engine=InnoDB;
+    CREATE TABLE visits (
+        id INT IDENTITY(1,1) PRIMARY KEY,
+        pet_id INT NOT NULL,
+        visit_date DATE,
+        description NVARCHAR(8192),
+        CONSTRAINT FK_visits_pet FOREIGN KEY(pet_id) REFERENCES pets(id)
+    );
+    GO
 
-    INSERT IGNORE INTO types VALUES (1, 'cat');
-    INSERT IGNORE INTO types VALUES (2, 'dog');
-    INSERT IGNORE INTO types VALUES (3, 'lizard');
-    INSERT IGNORE INTO types VALUES (4, 'snake');
-    INSERT IGNORE INTO types VALUES (5, 'bird');
-    INSERT IGNORE INTO types VALUES (6, 'hamster');
+    INSERT INTO types (name) VALUES ('cat'),('dog'),('lizard'),('snake'),('bird'),('hamster');
+    INSERT INTO owners (first_name,last_name,address,city,telephone) VALUES
+    ('George','Franklin','110 W. Liberty St.','Madison','6085551023'),
+    ('Betty','Davis','638 Cardinal Ave.','Sun Prairie','6085551749'),
+    ('Eduardo','Rodriquez','2693 Commerce St.','McFarland','6085558763'),
+    ('Harold','Davis','563 Friendly St.','Windsor','6085553198'),
+    ('Peter','McTavish','2387 S. Fair Way','Madison','6085552765'),
+    ('Jean','Coleman','105 N. Lake St.','Monona','6085552654'),
+    ('Jeff','Black','1450 Oak Blvd.','Monona','6085555387'),
+    ('Maria','Escobito','345 Maple St.','Madison','6085557683'),
+    ('David','Schroeder','2749 Blackhawk Trail','Madison','6085559435'),
+    ('Carlos','Estaban','2335 Independence La.','Waunakee','6085555487');
+    GO
 
-    INSERT IGNORE INTO owners VALUES (1, 'George', 'Franklin', '110 W. Liberty St.', 'Madison', '6085551023');
-    INSERT IGNORE INTO owners VALUES (2, 'Betty', 'Davis', '638 Cardinal Ave.', 'Sun Prairie', '6085551749');
-    INSERT IGNORE INTO owners VALUES (3, 'Eduardo', 'Rodriquez', '2693 Commerce St.', 'McFarland', '6085558763');
-    INSERT IGNORE INTO owners VALUES (4, 'Harold', 'Davis', '563 Friendly St.', 'Windsor', '6085553198');
-    INSERT IGNORE INTO owners VALUES (5, 'Peter', 'McTavish', '2387 S. Fair Way', 'Madison', '6085552765');
-    INSERT IGNORE INTO owners VALUES (6, 'Jean', 'Coleman', '105 N. Lake St.', 'Monona', '6085552654');
-    INSERT IGNORE INTO owners VALUES (7, 'Jeff', 'Black', '1450 Oak Blvd.', 'Monona', '6085555387');
-    INSERT IGNORE INTO owners VALUES (8, 'Maria', 'Escobito', '345 Maple St.', 'Madison', '6085557683');
-    INSERT IGNORE INTO owners VALUES (9, 'David', 'Schroeder', '2749 Blackhawk Trail', 'Madison', '6085559435');
-    INSERT IGNORE INTO owners VALUES (10, 'Carlos', 'Estaban', '2335 Independence La.', 'Waunakee', '6085555487');
+    INSERT INTO pets (name,birth_date,type_id,owner_id) VALUES
+    ('Leo','2000-09-07',1,1),
+    ('Basil','2002-08-06',6,2),
+    ('Rosy','2001-04-17',2,3),
+    ('Jewel','2000-03-07',2,3),
+    ('Iggy','2000-11-30',3,4),
+    ('George','2000-01-20',4,5),
+    ('Samantha','1995-09-04',1,6),
+    ('Max','1995-09-04',1,6),
+    ('Lucky','1999-08-06',5,7),
+    ('Mulligan','1997-02-24',2,8),
+    ('Freddy','2000-03-09',5,9),
+    ('Lucky','2000-06-24',2,10),
+    ('Sly','2002-06-08',1,10);
+    GO
 
-    INSERT IGNORE INTO pets VALUES (1, 'Leo', '2000-09-07', 1, 1);
-    INSERT IGNORE INTO pets VALUES (2, 'Basil', '2002-08-06', 6, 2);
-    INSERT IGNORE INTO pets VALUES (3, 'Rosy', '2001-04-17', 2, 3);
-    INSERT IGNORE INTO pets VALUES (4, 'Jewel', '2000-03-07', 2, 3);
-    INSERT IGNORE INTO pets VALUES (5, 'Iggy', '2000-11-30', 3, 4);
-    INSERT IGNORE INTO pets VALUES (6, 'George', '2000-01-20', 4, 5);
-    INSERT IGNORE INTO pets VALUES (7, 'Samantha', '1995-09-04', 1, 6);
-    INSERT IGNORE INTO pets VALUES (8, 'Max', '1995-09-04', 1, 6);
-    INSERT IGNORE INTO pets VALUES (9, 'Lucky', '1999-08-06', 5, 7);
-    INSERT IGNORE INTO pets VALUES (10, 'Mulligan', '1997-02-24', 2, 8);
-    INSERT IGNORE INTO pets VALUES (11, 'Freddy', '2000-03-09', 5, 9);
-    INSERT IGNORE INTO pets VALUES (12, 'Lucky', '2000-06-24', 2, 10);
-    INSERT IGNORE INTO pets VALUES (13, 'Sly', '2002-06-08', 1, 10);
+    INSERT INTO vets (first_name,last_name) VALUES
+    ('James','Carter'),
+    ('Helen','Leary'),
+    ('Linda','Douglas'),
+    ('Rafael','Ortega'),
+    ('Henry','Stevens'),
+    ('Sharon','Jenkins');
+    GO
 
-    INSERT IGNORE INTO vets VALUES (1, 'James', 'Carter');
-    INSERT IGNORE INTO vets VALUES (2, 'Helen', 'Leary');
-    INSERT IGNORE INTO vets VALUES (3, 'Linda', 'Douglas');
-    INSERT IGNORE INTO vets VALUES (4, 'Rafael', 'Ortega');
-    INSERT IGNORE INTO vets VALUES (5, 'Henry', 'Stevens');
-    INSERT IGNORE INTO vets VALUES (6, 'Sharon', 'Jenkins');
+    INSERT INTO specialties (name) VALUES ('radiology'),('surgery'),('dentistry');
+    GO
 
-    INSERT IGNORE INTO specialties VALUES (1, 'radiology');
-    INSERT IGNORE INTO specialties VALUES (2, 'surgery');
-    INSERT IGNORE INTO specialties VALUES (3, 'dentistry');
+    INSERT INTO vet_specialties (vet_id,specialty_id) VALUES (2,1),(3,2),(3,3),(4,2),(5,1);
+    GO
 
-    INSERT IGNORE INTO vet_specialties VALUES (2, 1);
-    INSERT IGNORE INTO vet_specialties VALUES (3, 2);
-    INSERT IGNORE INTO vet_specialties VALUES (3, 3);
-    INSERT IGNORE INTO vet_specialties VALUES (4, 2);
-    INSERT IGNORE INTO vet_specialties VALUES (5, 1);
-
-    INSERT IGNORE INTO visits VALUES (1, 7, '2010-03-04', 'rabies shot');
-    INSERT IGNORE INTO visits VALUES (2, 8, '2011-03-04', 'rabies shot');
-    INSERT IGNORE INTO visits VALUES (3, 8, '2009-06-04', 'neutered');
-    INSERT IGNORE INTO visits VALUES (4, 7, '2008-09-04', 'spayed');
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: api-gateway-ingress
-  annotations:
-spec:
-  ingressClassName: traefik
-  rules:
-  - http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: api-gateway
-            port:
-              number: 82
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: petclinic-loadgen-deployment
-  labels:
-    app: petclinic-loadgen
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: petclinic-loadgen
-  template:
-    metadata:
-      labels:
-        app: petclinic-loadgen
-    spec:
-      # If you are NOT running this from AWS, but from multipass for example set the below env variable
-      # set RUM_FRONTEND_IP to the IP address where you can reach your local Online Boutique
-      #env:
-      #  - name: RUM_FRONTEND_IP
-      #    value: "192.168.1.99"
-      containers:
-        - name: petclinic-loadgen
-          image: ghcr.io/splunk/online-boutique/rumloadgen:5.6
-          imagePullPolicy: Always
-          env:
-            - name: RUM_FRONTEND_IP
-              valueFrom:
-                secretKeyRef:
-                  name: workshop-secret
-                  key: url
-          volumeMounts:
-            - name: puppeteer
-              subPath: local-file
-              mountPath: /puppeteer/touchwebsite.js
-      volumes:
-        - name: puppeteer
-          configMap:
-            name: scriptfile
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: scriptfile
-data:
-  local-file: |
-    const { Console } = require('console');
-    const puppeteer = require('puppeteer');
-    function run () {
-        return new Promise(async (resolve, reject) => {
-            const customUserAgent = 'Mozilla/5.0 (X11; Linux x86_64; Splunk RUM_LoadGen) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36';
-            console.log('DEBUG: Using User Agent:', customUserAgent);
-
-            const browser = await puppeteer.launch({
-                headless: true,
-                defaultViewport: null,
-                args: [
-                  '--no-sandbox',
-                  '--disable-setuid-sandbox',
-                  '--disable-gpu',
-                  '--disable-dev-shm-usage',
-                  '--disable-web-security',
-                  '--disable-features=VizDisplayCompositor',
-                  '--max-old-space-size=256',
-                  '--disable-extensions',
-                  '--disable-plugins',
-                  '--disable-background-networking',
-                  '--disable-background-timer-throttling',
-                  '--disable-backgrounding-occluded-windows',
-                  '--disable-renderer-backgrounding',
-                  '--memory-pressure-off',
-                  `--user-agent=${customUserAgent}`
-                ]
-            });
-            try {
-                const wait_time = 500;  //Set up delay between page interactions
-                for (let loop=0; loop < 1;loop++) {  // as part of the load we run multiple of this script to generate multiple session
-                    const context = await browser.createBrowserContext();
-                    const page = await context.newPage();
-                    const urls= [process.env.RUM_FRONTEND_IP + "/#!/welcome"];
-                    const timeout = 30000;
-                    for (const element of urls) {
-                      const url = element;
-                      await page.goto(`${url}`);
-                      {
-                          const targetPage = page;
-                          await puppeteer.Locator.race([
-                              targetPage.locator('div.navbar-header > a > span'),
-                              targetPage.locator('::-p-xpath(/html/body/layout-nav/nav/div[1]/a/span)'),
-                              targetPage.locator(':scope >>> div.navbar-header > a > span')
-                          ])
-                              .setTimeout(timeout)
-                              .click({
-                              offset: {
-                                  x: 110,
-                                  y: 25,
-                              },
-                              });
-                        
-                          await page.waitForSelector('body > div > div > div > ui-view > layout-welcome > h1');
-                          const textContent = await page.evaluate(() => document.querySelector('body > div > div > div > ui-view > layout-welcome > h1').textContent);
-                          console.log('{"severity":"info","msg":"Welcome Text = "' + textContent + '"}');
-                        }
-                        { //click on owners link
-                          const targetPage = page;
-                          await puppeteer.Locator.race([
-                              targetPage.locator('::-p-aria(OWNERS)'),
-                              targetPage.locator('li.dropdown > a'),
-                              targetPage.locator('::-p-xpath(//*[@id=\\"main-navbar\\"]/ul/li[2]/a)'),
-                              targetPage.locator(':scope >>> li.dropdown > a'),
-                              targetPage.locator('::-p-text(Owners)')
-                          ])
-                              .setTimeout(timeout)
-                              .click({
-                              offset: {
-                                  x: 49.6875,
-                                  y: 33,
-                              },
-                              });
-                            console.log('{"severity":"info","msg":"@ALL"}');
-                      }
-                      {
-                          const targetPage = page;
-                          await puppeteer.Locator.race([
-                              targetPage.locator('li.dropdown li:nth-of-type(1) span:nth-of-type(2)'),
-                              targetPage.locator('::-p-xpath(//*[@id=\\"main-navbar\\"]/ul/li[2]/ul/li[1]/a/span[2])'),
-                              targetPage.locator(':scope >>> li.dropdown li:nth-of-type(1) span:nth-of-type(2)'),
-                              targetPage.locator('::-p-text(All)')
-                          ])
-                              .setTimeout(timeout)
-                              .click({
-                              offset: {
-                                  x: 29.484375,
-                                  y: 7,
-                              },
-                              });
-                      }
-                      {
-                          const targetPage = page;
-                          await puppeteer.Locator.race([
-                              targetPage.locator('::-p-aria(Maria Escobito[role=\\"link\\"])'),
-                              targetPage.locator('tr:nth-of-type(8) a'),
-                              targetPage.locator('::-p-xpath(/html/body/div/div/div/ui-view/owner-list/table/tbody/tr[8]/td[1]/a)'),
-                              targetPage.locator(':scope >>> tr:nth-of-type(8) a'),
-                              targetPage.locator('::-p-text(Maria Escobito)')
-                          ])
-                              .setTimeout(timeout)
-                              .click({
-                              offset: {
-                                  x: 43,
-                                  y: 9,
-                              },
-                              });
-                        console.log('{"severity":"info","msg":"@owner details page"}');
-                      }
-                      {
-                          const targetPage = page;
-                          await puppeteer.Locator.race([
-                              targetPage.locator('::-p-aria(Mulligan)'),
-                              targetPage.locator('table:nth-of-type(2) > tbody > tr > td:nth-of-type(1) a'),
-                              targetPage.locator('::-p-xpath(/html/body/div/div/div/ui-view/owner-details/table[2]/tbody/tr/td[1]/dl/dd[1]/a)'),
-                              targetPage.locator(':scope >>> table:nth-of-type(2) > tbody > tr > td:nth-of-type(1) a'),
-                              targetPage.locator('::-p-text(Mulligan)')
-                          ])
-                              .setTimeout(timeout)
-                              .click({
-                              offset: {
-                                  x: 40,
-                                  y: 5,
-                              },
-                              });
-                            console.log('{"severity":"info","msg":"@pet details page"}');
-                      }
-                      {
-                          const targetPage = page;
-                          await puppeteer.Locator.race([
-                              targetPage.locator('::-p-aria(Submit)'),
-                              targetPage.locator('body > div button'),
-                              targetPage.locator('::-p-xpath(/html/body/div/div/div/ui-view/pet-form/form/div[5]/div/button)'),
-                              targetPage.locator(':scope >>> body > div button'),
-                              targetPage.locator('::-p-text(Submit)')
-                          ])
-                              .setTimeout(timeout)
-                              .click({
-                              offset: {
-                                  x: 48.671875,
-                                  y: 14,
-                              },
-                              });
-                        console.log('{"severity":"info","msg":"@add pet page"}');
-                      }
-
-                      {
-                          const targetPage = page;
-                          await puppeteer.Locator.race([
-                              targetPage.locator('li:nth-of-type(3) span:nth-of-type(2)'),
-                              targetPage.locator('::-p-xpath(//*[@id=\\"main-navbar\\"]/ul/li[3]/a/span[2])'),
-                              targetPage.locator(':scope >>> li:nth-of-type(3) span:nth-of-type(2)'),
-                              targetPage.locator('::-p-text(Veterinarians)')
-                          ])
-                              .setTimeout(timeout)
-                              .click({
-                              offset: {
-                                  x: 31.640625,
-                                  y: 2,
-                              },
-                              });
-                        console.log('{"severity":"info","msg":"@veterinarians page"}');
-                      }
-
-                    }       
-                    await delay(wait_time );
-                    await browser.close()
-                }
-                process.exit();
-          } catch (e) {
-            console.log ('{"severity":"error","msg": "'+ e + '"}');
-          } finally {
-            await browser.close();
-          }
-        })
-    }
-    run().then(console.log).catch(console.error);
-
-    function delay(time) {
-      return new Promise(function(resolve) {
-          setTimeout(resolve, time)
-      });
-    }
+    INSERT INTO visits (pet_id,visit_date,description) VALUES
+    (7,'2010-03-04','rabies shot'),
+    (8,'2011-03-04','rabies shot'),
+    (8,'2009-06-04','neutered'),
+    (7,'2008-09-04','spayed');
+    GO
