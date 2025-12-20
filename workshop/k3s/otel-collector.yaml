@@ -7,13 +7,15 @@ clusterReceiver:
     - name: pods
       mode: watch
       namespaces: [default, apache, loadgen, splunk]
+
 agent:
   extraEnvs:
-  - name: WORKSHOP_ENVIRONMENT
-    valueFrom:
-      secretKeyRef:
-        name: workshop-secret
-        key: env
+    - name: WORKSHOP_ENVIRONMENT
+      valueFrom:
+        secretKeyRef:
+          name: workshop-secret
+          key: env
+
   config:
     receivers:
       receiver_creator:
@@ -34,14 +36,12 @@ agent:
                   enabled: true
                 db.server.top_query:
                   enabled: true
+
           nginx:
             rule: type == "port" && pod.name matches "nginx" && port == 8082
             config:
               endpoint: 'http://`endpoint`/nginx_status'
-          # smartagent/nginx:
-          #   rule: type == "port" && pod.name matches "nginx" && port == 8082
-          #   config:
-          #     type: collectd/nginx
+
           mysql/workshop:
             rule: type == "port" && pod.name matches "mysql" && port == 3306
             config:
@@ -51,8 +51,9 @@ agent:
               username: root
               password: root
               database: LxvGChW075
+
           mysql/petclinic:
-            rule: type =="port" && pod.name matches "petclinic-db" && port == 3306
+            rule: type == "port" && pod.name matches "petclinic-db" && port == 3306
             config:
               tls:
                 insecure: true
@@ -60,13 +61,42 @@ agent:
               username: root
               password: petclinic
               database: petclinic
+
           redis/workshop:
             rule: type == "port" && pod.name matches "redis-cart" && port == 6379
             config:
               endpoint: '`endpoint`'
+
+    exporters:
+      # REQUIRED for DB Monitoring
+      otlphttp/dbmon:
+        headers:
+          X-SF-Token: ${SPLUNK_ACCESS_TOKEN}
+          X-splunk-instrumentation-library: dbmon
+        logs_endpoint: https://ingest.us1.signalfx.com/v3/event
+        sending_queue:
+          batch:
+            flush_timeout: 15s
+            max_size: 10485760 # 10 MiB
+            sizer: bytes 
+
     extensions:
       zpages:
         endpoint: 0.0.0.0:55679
+
+    service:
+      pipelines:
+        # REQUIRED DB Monitoring pipeline
+        logs/dbm:
+          receivers:
+            - receiver_creator
+          processors:
+            - memory_limiter
+            - batch
+            - resource
+          exporters:
+            - otlphttp/dbmon
+
 logsCollection:
   extraFileLogs:
     filelog/syslog:
@@ -77,6 +107,7 @@ logsCollection:
         com.splunk.source: /var/log/syslog
         host.name: 'EXPR(env("K8S_NODE_NAME"))'
         com.splunk.sourcetype: syslog
+
     filelog/auth_log:
       include: [/var/log/auth.log]
       include_file_path: true
