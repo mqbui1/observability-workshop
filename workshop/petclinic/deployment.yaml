@@ -30,6 +30,8 @@ spec:
           env:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=native -DGIT_REPO=/petclinic-repo -Xdebug -Dsplunk.profiler.call.stack.interval=150"
+            - name: OTEL_INSTRUMENTATION_SPLUNK_JDBC_ENABLED
+              value: "true"
           resources:
             requests:
               memory: 512Mi
@@ -164,6 +166,8 @@ spec:
                 secretKeyRef:
                   name: workshop-secret
                   key: env
+            - name: OTEL_INSTRUMENTATION_SPLUNK_JDBC_ENABLED
+              value: "true"
           resources:
             requests:
               memory: 512Mi
@@ -238,6 +242,8 @@ spec:
           env:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=docker,mssql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
+            - name: OTEL_INSTRUMENTATION_SPLUNK_JDBC_ENABLED
+              value: "true"
           resources:
             requests:
               memory: 512Mi
@@ -291,6 +297,8 @@ spec:
           env:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=docker,mssql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
+            - name: OTEL_INSTRUMENTATION_SPLUNK_JDBC_ENABLED
+              value: "true"
           resources:
             requests:
               memory: 512Mi
@@ -344,6 +352,8 @@ spec:
           env:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=docker,mssql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
+            - name: OTEL_INSTRUMENTATION_SPLUNK_JDBC_ENABLED
+              value: "true"
           resources:
             requests:
               memory: 512Mi
@@ -396,6 +406,9 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 9090
+          env:
+            - name: OTEL_INSTRUMENTATION_SPLUNK_JDBC_ENABLED
+              value: "true"
           resources:
             requests:
               memory: 512Mi
