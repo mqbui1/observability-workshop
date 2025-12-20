@@ -129,6 +129,7 @@ spec:
         app: api-gateway
       annotations:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
     spec:
       containers:
         - command:
@@ -224,6 +225,8 @@ spec:
     metadata:
       labels:
         app: customers-service
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
     spec:
       terminationGracePeriodSeconds: 5
       containers:
@@ -279,6 +282,8 @@ spec:
     metadata:
       labels:
         app: vets-service
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
     spec:
       terminationGracePeriodSeconds: 5
       containers:
@@ -334,6 +339,8 @@ spec:
     metadata:
       labels:
         app: visits-service
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
     spec:
       terminationGracePeriodSeconds: 5
       containers:
