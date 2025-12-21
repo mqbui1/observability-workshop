@@ -52,16 +52,6 @@ agent:
               password: root
               database: LxvGChW075
 
-          mysql/petclinic:
-            rule: type == "port" && pod.name matches "petclinic-db" && port == 3306
-            config:
-              tls:
-                insecure: true
-              endpoint: '`endpoint`'
-              username: root
-              password: petclinic
-              database: petclinic
-
           redis/workshop:
             rule: type == "port" && pod.name matches "redis-cart" && port == 6379
             config:
@@ -89,7 +79,7 @@ agent:
         # REQUIRED DB Monitoring pipeline
         logs/dbm:
           receivers:
-            - receiver_creator
+            - sqlserver/petclinic
           processors:
             - memory_limiter
             - batch
