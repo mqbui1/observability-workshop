@@ -23,12 +23,15 @@ agent:
           sqlserver/petclinic:
             rule: type == "port" && pod.name matches "petclinic-db" && port == 1433
             config:
-              endpoint: '`endpoint`'
-              username: sa
-              password: Petclinic1!
-              database: petclinic
-              encrypt: false
-              trust_server_certificate: true
+              connection:
+                endpoint: '`endpoint`'
+                username: sa
+                password: Petclinic1!
+                database: petclinic
+                encrypt: false
+                trust_server_certificate: true
+          
+              # REQUIRED for Splunk DB Monitoring
               events:
                 db.server.query_sample:
                   enabled: true
