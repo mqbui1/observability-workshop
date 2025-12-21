@@ -34,6 +34,7 @@ agent:
             enabled: true
 
       receiver_creator:
+        receivers:
           nginx:
             rule: type == "port" && pod.name matches "nginx" && port == 8082
             config:
