@@ -29,8 +29,6 @@ agent:
               database: petclinic
               encrypt: false
               trust_server_certificate: true
-
-              # REQUIRED for Splunk DB Monitoring
               events:
                 db.server.query_sample:
                   enabled: true
@@ -63,12 +61,14 @@ agent:
         headers:
           X-SF-Token: ${SPLUNK_ACCESS_TOKEN}
           X-splunk-instrumentation-library: dbmon
-        logs_endpoint: https://ingest.us1.signalfx.com/v3/event
-        sending_queue:
-          batch:
-            flush_timeout: 15s
-            max_size: 10485760 # 10 MiB
-            sizer: bytes 
+        logs_endpoint: https://ingest.us1.signalfx.com/v2/dbmon
+
+    processors:
+      resource/dbmon:
+        attributes:
+          - key: service.name
+            value: petclinic-db
+            action: upsert
 
     extensions:
       zpages:
@@ -79,8 +79,9 @@ agent:
         # REQUIRED DB Monitoring pipeline
         logs/dbm:
           receivers:
-            - sqlserver/petclinic
+            - receiver_creator
           processors:
+            - resource/dbmon
             - memory_limiter
             - batch
             - resource
