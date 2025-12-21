@@ -24,14 +24,7 @@ agent:
   config:
     receivers:
       sqlserver/petclinic:
-        datasource:
-          server: petclinic-db
-          port: 1433
-          user: sa
-          password: Petclinic1!
-          database: petclinic
-          encrypt: false
-          trustServerCertificate: true
+        datasource: "sqlserver://sa:Petclinic1!@petclinic-db:1433?database=petclinic&encrypt=false&trustServerCertificate=true"
     
         events:
           db.server.query_sample:
