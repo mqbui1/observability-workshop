@@ -18,26 +18,22 @@ agent:
 
   config:
     receivers:
-      receiver_creator:
-        receivers:
-          sqlserver/petclinic:
-            rule: type == "port" && pod.name matches "petclinic-db" && port == 1433
-            config:
-              connection:
-                endpoint: '`endpoint`'
-                username: sa
-                password: Petclinic1!
-                database: petclinic
-                encrypt: false
-                trust_server_certificate: true
-          
-              # REQUIRED for Splunk DB Monitoring
-              events:
-                db.server.query_sample:
-                  enabled: true
-                db.server.top_query:
-                  enabled: true
+      sqlserver/petclinic:
+        connection:
+          endpoint: petclinic-db:1433
+          username: sa
+          password: Petclinic1!
+          database: petclinic
+          encrypt: false
+          trust_server_certificate: true
+    
+        events:
+          db.server.query_sample:
+            enabled: true
+          db.server.top_query:
+            enabled: true
 
+      receiver_creator:
           nginx:
             rule: type == "port" && pod.name matches "nginx" && port == 8082
             config:
@@ -82,7 +78,7 @@ agent:
         # REQUIRED DB Monitoring pipeline
         logs/dbm:
           receivers:
-            - receiver_creator
+            - sqlserver/petclinic
           processors:
             - resource/dbmon
             - memory_limiter
