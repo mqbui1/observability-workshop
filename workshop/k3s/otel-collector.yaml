@@ -15,18 +15,22 @@ agent:
         secretKeyRef:
           name: workshop-secret
           key: env
+    - name: SPLUNK_ACCESS_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: workshop-secret
+          key: access_token
 
   config:
     receivers:
       sqlserver/petclinic:
-        connection:
-          endpoint: petclinic-db:1433
-          username: sa
-          password: Petclinic1!
-          database: petclinic
-          encrypt: false
-          trust_server_certificate: true
-    
+        endpoint: petclinic-db:1433
+        username: sa
+        password: Petclinic1!
+        database: petclinic
+        encrypt: false
+        trust_server_certificate: true
+
         events:
           db.server.query_sample:
             enabled: true
