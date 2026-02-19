@@ -7,12 +7,13 @@ clusterReceiver:
             match_type: strict
             metric_names:
               - cpu.utilization
+              - system.memory.usage
 
     service:
       pipelines:
         metrics:
           receivers: [k8s_cluster] # Standard receiver for cluster-level metrics
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, batch, filter/metrics_allowlist]
           exporters: [signalfx]
           
   eventsEnabled: true
@@ -38,6 +39,7 @@ agent:
             match_type: strict
             metric_names:
               - cpu.utilization
+              - system.memory.usage
     receivers:
       receiver_creator:
         receivers:
@@ -80,7 +82,7 @@ agent:
         metrics:
           # Must include receiver_creator if you want those metrics filtered
           receivers: [hostmetrics, otlp, receiver_creator] 
-          processors: [memory_limiter, resourcedetection, batch]
+          processors: [memory_limiter, resourcedetection, batch, filter/metrics_allowlist]
           exporters: [signalfx]
           
 logsCollection:
