@@ -8,6 +8,9 @@ clusterReceiver:
             metric_names:
               - cpu.utilization
               - system.memory.usage
+              - system.network.io
+              - vmpage_io.swap.in
+              - vmpage_io.swap.out
 
     service:
       pipelines:
@@ -40,6 +43,9 @@ agent:
             metric_names:
               - cpu.utilization
               - system.memory.usage
+              - system.network.io
+              - vmpage_io.swap.in
+              - vmpage_io.swap.out
     receivers:
       receiver_creator:
         receivers:
