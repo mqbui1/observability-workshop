@@ -13,7 +13,7 @@ clusterReceiver:
         metrics:
           receivers: [k8s_cluster] # Standard receiver for cluster-level metrics
           processors: [memory_limiter, batch, filter/metrics_allowlist]
-          exporters: [splunk_hec]
+          exporters: [signalfx]
           
   eventsEnabled: true
   k8sObjects:
@@ -81,7 +81,7 @@ agent:
           # Must include receiver_creator if you want those metrics filtered
           receivers: [hostmetrics, otlp, receiver_creator] 
           processors: [memory_limiter, resourcedetection, batch, filter/metrics_allowlist]
-          exporters: [splunk_hec]
+          exporters: [signalfx]
           
 logsCollection:
   extraFileLogs:
