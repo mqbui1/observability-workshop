@@ -1,4 +1,20 @@
 clusterReceiver:
+  config:
+    processors:
+      filter/metrics_allowlist:
+        metrics:
+          include:
+            match_type: strict
+            metric_names:
+              - cpu.utilization
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [k8s_cluster] # Standard receiver for cluster-level metrics
+          processors: [memory_limiter, batch, filter/metrics_allowlist]
+          exporters: [splunk_hec]
+          
   eventsEnabled: true
   k8sObjects:
     - name: events
@@ -15,6 +31,13 @@ agent:
         name: workshop-secret
         key: env
   config:
+    processors:
+      filter/metrics_allowlist:
+        metrics:
+          include:
+            match_type: strict
+            metric_names:
+              - cpu.utilization
     receivers:
       receiver_creator:
         receivers:
@@ -51,6 +74,15 @@ agent:
     extensions:
       zpages:
         endpoint: 0.0.0.0:55679
+
+    service:
+      pipelines:
+        metrics:
+          # Must include receiver_creator if you want those metrics filtered
+          receivers: [hostmetrics, otlp, receiver_creator] 
+          processors: [memory_limiter, resourcedetection, batch, filter/metrics_allowlist]
+          exporters: [splunk_hec]
+          
 logsCollection:
   extraFileLogs:
     filelog/syslog:
