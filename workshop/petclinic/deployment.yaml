@@ -131,7 +131,7 @@ spec:
       labels:
         app: api-gateway
       annotations:
-        #        instrumentation.opentelemetry.io/inject-java: "true"
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       containers:
@@ -225,6 +225,8 @@ spec:
       app: customers-service
   template:
     metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
       labels:
         app: customers-service
     spec:
@@ -279,6 +281,8 @@ spec:
       app: vets-service
   template:
     metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
       labels:
         app: vets-service
     spec:
@@ -333,6 +337,8 @@ spec:
       app: visits-service
   template:
     metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
       labels:
         app: visits-service
     spec:
@@ -450,6 +456,8 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
       labels:
         app: petclinic-db
     spec:
@@ -628,6 +636,8 @@ spec:
       app: petclinic-loadgen
   template:
     metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
       labels:
         app: petclinic-loadgen
     spec:
