@@ -1,20 +1,13 @@
 clusterReceiver:
   config:
-    processors:
-      filter/metrics_allowlist:
-        metrics:
-          include:
-            match_type: strict
-            metric_names:
-              - cpu.utilization
-              - system.memory.usage
-    service:
-      pipelines:
-        metrics:
-          receivers: [k8s_cluster] # Standard receiver for cluster-level metrics
-          processors: [memory_limiter, batch, filter/metrics_allowlist]
-          exporters: [signalfx]
-          
+    processors: {}
+  service:
+    pipelines:
+      metrics:
+        receivers: [k8s_cluster]
+        processors: [memory_limiter, batch]
+        exporters: [signalfx]
+
   eventsEnabled: true
   k8sObjects:
     - name: events
@@ -23,22 +16,16 @@ clusterReceiver:
     - name: pods
       mode: watch
       namespaces: [default, apache, loadgen, splunk]
+
 agent:
   extraEnvs:
-  - name: WORKSHOP_ENVIRONMENT
-    valueFrom:
-      secretKeyRef:
-        name: workshop-secret
-        key: env
+    - name: WORKSHOP_ENVIRONMENT
+      valueFrom:
+        secretKeyRef:
+          name: workshop-secret
+          key: env
+
   config:
-    processors:
-      filter/metrics_allowlist:
-        metrics:
-          include:
-            match_type: strict
-            metric_names:
-              - cpu.utilization
-              - system.memory.usage
     receivers:
       receiver_creator:
         receivers:
@@ -46,10 +33,12 @@ agent:
             rule: type == "port" && pod.name matches "nginx" && port == 8082
             config:
               endpoint: 'http://`endpoint`/nginx_status'
+
           # smartagent/nginx:
           #   rule: type == "port" && pod.name matches "nginx" && port == 8082
           #   config:
           #     type: collectd/nginx
+
           mysql/workshop:
             rule: type == "port" && pod.name matches "mysql" && port == 3306
             config:
@@ -59,6 +48,7 @@ agent:
               username: root
               password: root
               database: LxvGChW075
+
           mysql/petclinic:
             rule: type =="port" && pod.name matches "petclinic-db" && port == 3306
             config:
@@ -68,10 +58,12 @@ agent:
               username: root
               password: petclinic
               database: petclinic
+
           redis/workshop:
             rule: type == "port" && pod.name matches "redis-cart" && port == 6379
             config:
               endpoint: '`endpoint`'
+
     extensions:
       zpages:
         endpoint: 0.0.0.0:55679
@@ -79,26 +71,30 @@ agent:
     service:
       pipelines:
         metrics:
-          # Must include receiver_creator if you want those metrics filtered
-          receivers: [hostmetrics, otlp, receiver_creator] 
-          processors: [memory_limiter, resourcedetection, batch, filter/metrics_allowlist]
+          receivers: [hostmetrics, otlp, receiver_creator]
+          processors: [memory_limiter, resourcedetection, batch]
           exporters: [signalfx]
-          
-logsCollection:
-  extraFileLogs:
-    filelog/syslog:
-      include: [/var/log/syslog]
-      include_file_path: true
-      include_file_name: false
-      resource:
-        com.splunk.source: /var/log/syslog
-        host.name: 'EXPR(env("K8S_NODE_NAME"))'
-        com.splunk.sourcetype: syslog
-    filelog/auth_log:
-      include: [/var/log/auth.log]
-      include_file_path: true
-      include_file_name: false
-      resource:
-        com.splunk.source: /var/log/auth.log
-        host.name: 'EXPR(env("K8S_NODE_NAME"))'
-        com.splunk.sourcetype: auth_log
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, resourcedetection, batch]
+          exporters: [sapm]
+
+  logsCollection:
+    extraFileLogs:
+      filelog/syslog:
+        include: [/var/log/syslog]
+        include_file_path: true
+        include_file_name: false
+        resource:
+          com.splunk.source: /var/log/syslog
+          host.name: 'EXPR(env("K8S_NODE_NAME"))'
+          com.splunk.sourcetype: syslog
+
+      filelog/auth_log:
+        include: [/var/log/auth.log]
+        include_file_path: true
+        include_file_name: false
+        resource:
+          com.splunk.source: /var/log/auth.log
+          host.name: 'EXPR(env("K8S_NODE_NAME"))'
+          com.splunk.sourcetype: auth_log
