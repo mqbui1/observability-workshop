@@ -1,12 +1,12 @@
 clusterReceiver:
   config:
     processors: {}
-  service:
-    pipelines:
-      metrics:
-        receivers: [k8s_cluster]
-        processors: [memory_limiter, batch]
-        exporters: [signalfx]
+    service:
+      pipelines:
+        metrics:
+          receivers: [k8s_cluster]
+          processors: [memory_limiter, batch]
+          exporters: [signalfx]
 
   eventsEnabled: true
   k8sObjects:
