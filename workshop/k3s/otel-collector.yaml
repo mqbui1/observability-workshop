@@ -7,7 +7,6 @@ clusterReceiver:
           receivers: [k8s_cluster]
           processors: [memory_limiter, batch]
           exporters: [signalfx]
-
   eventsEnabled: true
   k8sObjects:
     - name: events
@@ -16,7 +15,6 @@ clusterReceiver:
     - name: pods
       mode: watch
       namespaces: [default, apache, loadgen, splunk]
-
 agent:
   extraEnvs:
     - name: WORKSHOP_ENVIRONMENT
@@ -24,7 +22,6 @@ agent:
         secretKeyRef:
           name: workshop-secret
           key: env
-
   config:
     receivers:
       receiver_creator:
@@ -33,12 +30,6 @@ agent:
             rule: type == "port" && pod.name matches "nginx" && port == 8082
             config:
               endpoint: 'http://`endpoint`/nginx_status'
-
-          # smartagent/nginx:
-          #   rule: type == "port" && pod.name matches "nginx" && port == 8082
-          #   config:
-          #     type: collectd/nginx
-
           mysql/workshop:
             rule: type == "port" && pod.name matches "mysql" && port == 3306
             config:
@@ -48,7 +39,6 @@ agent:
               username: root
               password: root
               database: LxvGChW075
-
           mysql/petclinic:
             rule: type =="port" && pod.name matches "petclinic-db" && port == 3306
             config:
@@ -58,11 +48,22 @@ agent:
               username: root
               password: petclinic
               database: petclinic
-
           redis/workshop:
             rule: type == "port" && pod.name matches "redis-cart" && port == 6379
             config:
               endpoint: '`endpoint`'
+
+    # ---- NEW: filter processor for DB CLIENT spans only ----
+    processors:
+      filter/db_spans_only:
+        traces:
+          span:
+            include:
+              match_type: strict
+              span_kinds: [CLIENT]
+              attributes:
+                - key: db.system
+                  action: require
 
     exporters:
       otlphttp/traces:
@@ -70,20 +71,47 @@ agent:
         headers:
           X-SF-Token: ${SPLUNK_ACCESS_TOKEN}
 
+    # ---- NEW: spanmetrics connector ----
+    connectors:
+      spanmetrics:
+        histogram:
+          explicit:
+            buckets: [10ms, 25ms, 50ms, 100ms, 250ms, 500ms, 1s, 2.5s]
+        dimensions:
+          - name: db.system
+          - name: db.operation
+          - name: db.sql.table
+          - name: sf_service
+        metrics_flush_interval: 60s
+
     extensions:
       zpages:
         endpoint: 0.0.0.0:55679
 
     service:
       pipelines:
-        metrics:
-          receivers: [hostmetrics, otlp, receiver_creator]
-          processors: [memory_limiter, resourcedetection, batch]
-          exporters: [signalfx]
+        # Unchanged — all spans to Splunk APM
         traces:
           receivers: [otlp]
           processors: [memory_limiter, resourcedetection, batch]
           exporters: [otlphttp/traces]
+
+        # ---- NEW: DB CLIENT spans only → spanmetrics connector ----
+        traces/db_metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, resourcedetection, filter/db_spans_only, batch]
+          exporters: [spanmetrics]
+
+        # Unchanged — host/k8s metrics to Splunk
+        metrics:
+          receivers: [hostmetrics, otlp, receiver_creator]
+          processors: [memory_limiter, resourcedetection, batch]
+          exporters: [signalfx]
+
+        # ---- NEW: spanmetrics output → Splunk as custom metrics ----
+        metrics/spanmetrics:
+          receivers: [spanmetrics]
+          exporters: [signalfx]
 
 logsCollection:
   extraFileLogs:
@@ -95,7 +123,6 @@ logsCollection:
         com.splunk.source: /var/log/syslog
         host.name: 'EXPR(env("K8S_NODE_NAME"))'
         com.splunk.sourcetype: syslog
-
     filelog/auth_log:
       include: [/var/log/auth.log]
       include_file_path: true
