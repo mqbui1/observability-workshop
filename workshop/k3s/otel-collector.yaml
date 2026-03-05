@@ -64,6 +64,12 @@ agent:
             config:
               endpoint: '`endpoint`'
 
+    exporters:
+      otlphttp/traces:
+        traces_endpoint: https://ingest.${SPLUNK_REALM}.signalfx.com/v2/trace/otlp
+        headers:
+          X-SF-Token: ${SPLUNK_ACCESS_TOKEN}
+
     extensions:
       zpages:
         endpoint: 0.0.0.0:55679
@@ -77,7 +83,7 @@ agent:
         traces:
           receivers: [otlp]
           processors: [memory_limiter, resourcedetection, batch]
-          exporters: [sapm]
+          exporters: [otlphttp/traces]
 
 logsCollection:
   extraFileLogs:
