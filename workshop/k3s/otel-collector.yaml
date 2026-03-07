@@ -15,6 +15,7 @@ clusterReceiver:
     - name: pods
       mode: watch
       namespaces: [default, apache, loadgen, splunk]
+
 agent:
   extraEnvs:
     - name: WORKSHOP_ENVIRONMENT
@@ -22,6 +23,7 @@ agent:
         secretKeyRef:
           name: workshop-secret
           key: env
+
   config:
     receivers:
       receiver_creator:
@@ -53,17 +55,16 @@ agent:
             config:
               endpoint: '`endpoint`'
 
-    # ---- NEW: filter processor for DB CLIENT spans only ----
     processors:
+      # FIX: use OTTL expressions (list of drop conditions) instead of the old
+      # include/exclude map syntax. Spans matching ANY condition are dropped.
+      # Only DB CLIENT spans pass through to the spanmetrics connector.
       filter/db_spans_only:
+        error_mode: ignore
         traces:
           span:
-            include:
-              match_type: strict
-              span_kinds: [CLIENT]
-              attributes:
-                - key: db.system
-                  action: require
+            - 'attributes["db.system"] == nil'
+            - 'kind != SPAN_KIND_CLIENT'
 
     exporters:
       otlphttp/traces:
@@ -71,7 +72,6 @@ agent:
         headers:
           X-SF-Token: ${SPLUNK_ACCESS_TOKEN}
 
-    # ---- NEW: spanmetrics connector ----
     connectors:
       spanmetrics:
         histogram:
@@ -96,7 +96,7 @@ agent:
           processors: [memory_limiter, resourcedetection, batch]
           exporters: [otlphttp/traces]
 
-        # ---- NEW: DB CLIENT spans only → spanmetrics connector ----
+        # DB CLIENT spans only → spanmetrics connector
         traces/db_metrics:
           receivers: [otlp]
           processors: [memory_limiter, resourcedetection, filter/db_spans_only, batch]
@@ -108,7 +108,7 @@ agent:
           processors: [memory_limiter, resourcedetection, batch]
           exporters: [signalfx]
 
-        # ---- NEW: spanmetrics output → Splunk as custom metrics ----
+        # spanmetrics output → Splunk as custom metrics
         metrics/spanmetrics:
           receivers: [spanmetrics]
           exporters: [signalfx]
