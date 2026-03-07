@@ -68,9 +68,12 @@ agent:
 
     exporters:
       otlphttp/traces:
-        traces_endpoint: https://ingest.${SPLUNK_REALM}.signalfx.com/v2/trace/otlp
+        # FIX: hardcoded realm (us1) to match Helm chart — SPLUNK_REALM is not
+        # injected as an env var. Using SPLUNK_OBSERVABILITY_ACCESS_TOKEN which
+        # IS available in the agent pod.
+        traces_endpoint: https://ingest.us1.signalfx.com/v2/trace/otlp
         headers:
-          X-SF-Token: ${SPLUNK_ACCESS_TOKEN}
+          X-SF-Token: ${SPLUNK_OBSERVABILITY_ACCESS_TOKEN}
 
     connectors:
       spanmetrics:
