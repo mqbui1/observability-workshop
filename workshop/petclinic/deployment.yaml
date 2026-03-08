@@ -393,6 +393,8 @@ spec:
       app: admin-server
   template:
     metadata:
+      annotations:
+        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
       labels:
         app: admin-server
       annotations:
