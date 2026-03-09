@@ -78,8 +78,7 @@ agent:
           - name: db.system
           - name: db.operation
           - name: db.sql.table
-          - name: service.name   # FIX: was sf_service, which is added by the exporter
-                                 # and not available at connector processing time
+          # service.name is included automatically by spanmetrics — no need to list it
         metrics_flush_interval: 60s
 
     extensions:
