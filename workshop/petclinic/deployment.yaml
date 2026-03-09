@@ -458,8 +458,6 @@ spec:
     type: Recreate
   template:
     metadata:
-      annotations:
-        instrumentation.opentelemetry.io/inject-java: "default/splunk-otel-collector"
       labels:
         app: petclinic-db
     spec:
