@@ -94,7 +94,8 @@ agent:
 
         traces/db_metrics:
           receivers: [otlp]
-          processors: [memory_limiter, resourcedetection, filter/db_spans_only, batch]
+          processors: [memory_limiter, resourcedetection, filter/db_spans_only]
+          # batch removed — spanmetrics connector should receive spans unbatched
           exporters: [spanmetrics]
 
         metrics:
