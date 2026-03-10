@@ -61,7 +61,7 @@ agent:
         traces:
           span:
             - 'attributes["db.system"] == nil'
-            - 'kind != SPAN_KIND_CLIENT'
+            - 'kind != 3'
 
     exporters:
       otlphttp/traces:
