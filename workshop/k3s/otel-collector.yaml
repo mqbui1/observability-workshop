@@ -61,7 +61,7 @@ agent:
         traces:
           span:
             - 'attributes["db.system"] == nil'
-            - 'kind != 3'
+            - 'kind != 3'   # 3 = SPAN_KIND_CLIENT
 
     exporters:
       otlphttp/traces:
@@ -78,7 +78,7 @@ agent:
           - name: db.system
           - name: db.operation
           - name: db.sql.table
-          # service.name is included automatically by spanmetrics — no need to list it
+          # service.name is included automatically by spanmetrics
         metrics_flush_interval: 60s
 
     extensions:
@@ -94,8 +94,9 @@ agent:
 
         traces/db_metrics:
           receivers: [otlp]
-          processors: [memory_limiter, resourcedetection]
-          # batch removed — spanmetrics connector should receive spans unbatched
+          processors: [memory_limiter, resourcedetection, filter/db_spans_only]
+          # filter restored — only DB CLIENT spans reach spanmetrics connector
+          # batch intentionally omitted — spanmetrics connector needs unbatched spans
           exporters: [spanmetrics]
 
         metrics:
@@ -103,9 +104,6 @@ agent:
           processors: [memory_limiter, resourcedetection, batch]
           exporters: [signalfx]
 
-        # FIX: added processors so resource attributes (host.name, deployment.environment)
-        # are present when signalfx exporter sends the metrics — without these the
-        # exporter was silently dropping the spanmetrics output
         metrics/spanmetrics:
           receivers: [spanmetrics]
           processors: [memory_limiter, resourcedetection, batch]
