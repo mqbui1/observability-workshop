@@ -32,7 +32,12 @@ spec:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=native -DGIT_REPO=/petclinic-repo -Xdebug -Dsplunk.profiler.call.stack.interval=150"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
           resources:
             requests:
               memory: 512Mi
@@ -96,7 +101,12 @@ spec:
             - name: JAVA_OPTIONS
               value: "-Xdebug -Dsplunk.profiler.call.stack.interval=150"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
           resources:
             requests:
               #cpu: 125m
@@ -156,7 +166,12 @@ spec:
             - name: JAVA_OPTIONS
               value: "-Xdebug -Dsplunk.profiler.call.stack.interval=150"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
             - name: RUM_REALM
               valueFrom:
                 secretKeyRef:
@@ -255,7 +270,12 @@ spec:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=docker,mysql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
           resources:
             requests:
               memory: 512Mi
@@ -313,7 +333,12 @@ spec:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=docker,mysql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
           resources:
             requests:
               memory: 512Mi
@@ -371,7 +396,12 @@ spec:
             - name: _JAVA_OPTIONS
               value: "-Dspring.profiles.active=docker,mysql -Xdebug -Dsplunk.profiler.call.stack.interval=150"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
           resources:
             requests:
               memory: 512Mi
@@ -483,7 +513,12 @@ spec:
             - name: MYSQL_DATABASE
               value: "petclinic"
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
           ports:
             - containerPort: 3306
               name: petclinic-db
@@ -671,7 +706,12 @@ spec:
                   name: workshop-secret
                   key: url
             - name: OTEL_RESOURCE_ATTRIBUTES
-              value: deployment.environment=petclinicmbtest
+              value: deployment.environment=$(WORKSHOP_ENV)
+            - name: WORKSHOP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-secret
+                  key: env
           volumeMounts:
             - name: puppeteer
               subPath: local-file
